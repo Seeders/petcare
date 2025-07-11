@@ -95,7 +95,6 @@
             bottom: 20px;
             font-size: 2rem;
             z-index: 1000;
-            transition: transform 0.1s ease;
         }
 
         .dog-walker {
@@ -103,7 +102,26 @@
             bottom: 20px;
             font-size: 2rem;
             z-index: 999;
-            transition: transform 0.1s ease;
+        }
+
+        /* Floating Elements */
+        .floating-element {
+            position: absolute;
+            opacity: 1;
+            animation: float 6s ease-in-out infinite;
+			z-index: 10;
+        }
+
+        .floating-element:nth-child(2) {
+            top: 60%;
+            right: 15%;
+            animation-delay: 2s;
+        }
+
+        .floating-element:nth-child(3) {
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
         }
 
         /* Services Section */
@@ -403,7 +421,10 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="walking-dog">🐕</div>
-        <div class="dog-walker">🚶</div>        
+        <div class="dog-walker">🚶‍♀️</div>
+        <div class="floating-element">🏠</div>
+        <div class="floating-element">🐱</div>
+        
         <div class="hero-content">
             <h1>Peninsula Pet & Home Care</h1>
             <p>Professional, loving care for your pets and home while you're away. Peace of mind guaranteed.</p>
@@ -545,49 +566,61 @@
             card.style.animationDelay = `${index * 0.2}s`;
         });
 
-        // Walking dog and walker animation
-        const walkingDog = document.querySelector('.walking-dog');
-        const dogWalker = document.querySelector('.dog-walker');
-        let position = 0;
-        let direction = 1;
-        const speed = 2;
-        const dogWalkerDistance = 60; // Distance between dog and walker
-
+		// Walking dog and walker animation
+		const walkingDog = document.querySelector('.walking-dog');
+		const dogWalker = document.querySelector('.dog-walker');
+		let position = 0;
+		let direction = 1;
+		const speed = 1;
+		const dogWalkerDistance = 60; // Distance between dog and walker
 		let iconDir = direction * -1;
+		let walkingTime = 0; // Time counter for walking animation
+
 		walkingDog.style.transform = `scaleX(${iconDir})`;
 		dogWalker.style.transform = `scaleX(${iconDir})`;
-        
-        function animateWalkingDog() {
-            const maxWidth = window.innerWidth - 100; // Account for both dog and walker width
-            
-            position += speed * direction;
-            
-            // Reverse direction when hitting edges
-            if (position >= maxWidth || position <= 0) {
-                direction *= -1;
+
+		function animateWalkingDog() {
+			const maxWidth = window.innerWidth - 100; // Account for both dog and walker width
+			
+			position += speed * direction;
+			walkingTime += 0.1; // Increment time for walking animation
+			
+			// Calculate subtle rotation and vertical bob for walking effect
+			const dogRotation = Math.sin(walkingTime) * 3; // 3 degrees max rotation
+			const walkerRotation = Math.sin(walkingTime + 0.5) * 2; // Slightly offset and less rotation
+			const dogBob = Math.sin(walkingTime * 2) * 1; // Vertical bob, 2px max
+			const walkerBob = Math.sin(walkingTime * 2 + 0.3) * .5; // Slightly offset and less bob
+			
+			// Reverse direction when hitting edges
+			if (position >= maxWidth || position <= 0) {
+				direction *= -1;
 				iconDir = direction * -1;
-                // Flip both the dog and walker horizontally when changing direction
-                walkingDog.style.transform = `scaleX(${iconDir})`;
-                dogWalker.style.transform = `scaleX(${iconDir})`;
-            }
-            
-            // Position the dog
-            walkingDog.style.left = position + 'px';
-            
-            // Position the walker behind the dog (maintaining distance)
-            if (direction === 1) {
-                // Moving right, walker is behind (to the left)
-                dogWalker.style.left = (position - dogWalkerDistance) + 'px';
-            } else {
-                // Moving left, walker is behind (to the right)
-                dogWalker.style.left = (position + dogWalkerDistance) + 'px';
-            }
-            
-            requestAnimationFrame(animateWalkingDog);
-        }
-        
-        // Start the walking animation
-        animateWalkingDog();
+				// Flip both the dog and walker horizontally when changing direction, preserve walking animation
+				walkingDog.style.transform = `scaleX(${iconDir}) rotate(${dogRotation}deg) translateY(${dogBob}px)`;
+				dogWalker.style.transform = `scaleX(${iconDir}) rotate(${walkerRotation}deg) translateY(${walkerBob}px)`;
+			} else {
+				// Apply rotation and vertical bob animation during normal movement
+				walkingDog.style.transform = `scaleX(${iconDir}) rotate(${dogRotation}deg) translateY(${dogBob}px)`;
+				dogWalker.style.transform = `scaleX(${iconDir}) rotate(${walkerRotation}deg) translateY(${walkerBob}px)`;
+			}
+			
+			// Position the dog
+			walkingDog.style.left = position + 'px';
+			
+			// Position the walker behind the dog (maintaining distance)
+			if (direction === 1) {
+				// Moving right, walker is behind (to the left)
+				dogWalker.style.left = (position - dogWalkerDistance) + 'px';
+			} else {
+				// Moving left, walker is behind (to the right)
+				dogWalker.style.left = (position + dogWalkerDistance) + 'px';
+			}
+			
+			requestAnimationFrame(animateWalkingDog);
+		}
+
+		// Start the walking animation
+		animateWalkingDog();
         
         // Handle window resize
         window.addEventListener('resize', () => {
