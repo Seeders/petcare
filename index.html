@@ -575,7 +575,6 @@ function createPoop(positionX) {
     poop.style.fontSize = '1rem';
     poop.style.zIndex = '998';
     document.body.appendChild(poop);
-    console.log(`Poop created at position: ${positionX}, direction: ${direction}`);
     return poop;
 }
 
@@ -599,7 +598,6 @@ function animateWalkingDog() {
         const poop = createPoop(position);
         poops.push({ position, element: poop, createdDirection: direction });
         hasPoopedThisDirection = true;
-        console.log(`Poop dropped, hasPoopedThisDirection set to true`);
     }
 
     // Reverse direction when hitting edges
@@ -611,7 +609,6 @@ function animateWalkingDog() {
         let dPos = dogBob + dogOffset;
         walkingDog.style.transform = `scaleX(${dScale}) scaleY(${dogScale}) rotate(${dogRotation}deg) translateY(${dPos}px)`;
         dogWalker.style.transform = `scaleX(${iconDir}) rotate(${walkerRotation}deg) translateY(${walkerBob}px)`;
-        console.log(`Direction reversed at position: ${position}, new direction: ${direction}, hasPoopedThisDirection reset`);
     } else {
         let dScale = iconDir * dogScale;
         let dPos = dogBob + dogOffset;
@@ -630,7 +627,6 @@ function animateWalkingDog() {
     for (let i = poops.length - 1; i >= 0; i--) {
         const poop = poops[i];
         if (direction !== poop.createdDirection && Math.abs(walkerPosition - poop.position) < 5) {
-            console.log(`Poop removed at position: ${poop.position}, walker at: ${walkerPosition}, current direction: ${direction}, created direction: ${poop.createdDirection}`);
             poop.element.style.transition = 'opacity 0.3s ease';
             poop.element.style.opacity = '0';
             setTimeout(() => {
@@ -658,7 +654,6 @@ window.addEventListener('resize', () => {
         if (poop.position > maxWidth) {
             poop.element.style.left = `${maxWidth}px`;
             poop.position = maxWidth;
-            console.log(`Poop position adjusted to: ${maxWidth} on resize`);
         }
     });
 });
