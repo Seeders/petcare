@@ -549,12 +549,12 @@
 		const dogWalker = document.querySelector('.dog-walker');
 		let position = 0;
 		let direction = 1;
-		const speed = 1;
+		const speed = .25;
 		const dogWalkerDistance = 10; // Distance between dog and walker
 		let iconDir = direction * -1;
 		let walkingTime = 0; // Time counter for walking animation
 		let dogScale = .5;
-		let dogOffset = 30 * dogScale;
+		let dogOffset = 35 * dogScale;
 		walkingDog.style.transform = `scaleX(${iconDir})`;
 		dogWalker.style.transform = `scaleX(${iconDir})`;
 
