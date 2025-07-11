@@ -550,10 +550,11 @@
 		let position = 0;
 		let direction = 1;
 		const speed = 1;
-		const dogWalkerDistance = 60; // Distance between dog and walker
+		const dogWalkerDistance = 10; // Distance between dog and walker
 		let iconDir = direction * -1;
 		let walkingTime = 0; // Time counter for walking animation
-
+		let dogScale = .5;
+		let dogOffset = 30 * dogScale;
 		walkingDog.style.transform = `scaleX(${iconDir})`;
 		dogWalker.style.transform = `scaleX(${iconDir})`;
 
@@ -573,12 +574,17 @@
 			if (position >= maxWidth || position <= 0) {
 				direction *= -1;
 				iconDir = direction * -1;
+				let dScale = iconDir * dogScale;
+				let dPos = dogBob + dogOffset;
 				// Flip both the dog and walker horizontally when changing direction, preserve walking animation
-				walkingDog.style.transform = `scaleX(${iconDir}) rotate(${dogRotation}deg) translateY(${dogBob}px)`;
+				walkingDog.style.transform = `scaleX(${dScale}) scaleY(${dogScale}) rotate(${dogRotation}deg) translateY(${dPos}px)`;
+				
 				dogWalker.style.transform = `scaleX(${iconDir}) rotate(${walkerRotation}deg) translateY(${walkerBob}px)`;
 			} else {
+				let dScale = iconDir * dogScale;
+				let dPos = dogBob + dogOffset;
 				// Apply rotation and vertical bob animation during normal movement
-				walkingDog.style.transform = `scaleX(${iconDir}) rotate(${dogRotation}deg) translateY(${dogBob}px)`;
+				walkingDog.style.transform = `scaleX(${dScale}) scaleY(${dogScale}) rotate(${dogRotation}deg) translateY(${dPos}px)`;
 				dogWalker.style.transform = `scaleX(${iconDir}) rotate(${walkerRotation}deg) translateY(${walkerBob}px)`;
 			}
 			
