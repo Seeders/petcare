@@ -48,6 +48,9 @@
             max-width: 800px;
             margin: 0 auto;
             color: white;
+			border-radius: 1em;
+			border: 1px solid transparent;			
+            backdrop-filter: blur(10px);
         }
 
         .hero h1 {
@@ -243,8 +246,8 @@
         /* Contact Section */
         .contact {
             padding: 5rem 2rem;
-            background: #1a1a1a;
-            color: white;
+            color: #333;
+            background: url(paw.png) #1a1a1a;
         }
 
         .contact-content {
@@ -262,6 +265,7 @@
         .contact-info p {
             margin-bottom: 1rem;
             font-size: 1.1rem;
+			backdrop-filter: blur(10px);
         }
 
         .contact-form {
@@ -289,7 +293,7 @@
             border: none;
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.1);
-            color: white;
+            color: #333;
             font-size: 1rem;
             transition: all 0.3s ease;
         }
@@ -303,12 +307,12 @@
 
         .form-group input::placeholder,
         .form-group textarea::placeholder {
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(0, 0, 0, 0.5);
         }
 
         .submit-btn {
             background: #ff6b6b;
-            color: white;
+            color: #fff;
             padding: 1rem 2rem;
             border: none;
             border-radius: 50px;
