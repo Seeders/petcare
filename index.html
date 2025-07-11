@@ -506,117 +506,162 @@
             <p>&copy; 2025 Peninsula Pet & Home Care. Licensed, Insured & Bonded. Your pets deserve the best care.</p>
         </div>
     </footer>
-
-    <script>
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
-            });
+<script>
+// Smooth scrolling for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+            behavior: 'smooth'
         });
+    });
+});
 
-        // Scroll animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
+// Scroll animations
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, observerOptions);
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+}, observerOptions);
 
-        document.querySelectorAll('.fade-in').forEach(el => {
-            observer.observe(el);
-        });
+document.querySelectorAll('.fade-in').forEach(el => {
+    observer.observe(el);
+});
 
-        // Form submission
-        document.querySelector('form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Thank you for your message! We\'ll get back to you within 24 hours.');
-            this.reset();
-        });
+// Form submission
+document.querySelector('form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('Thank you for your message! We\'ll get back to you within 24 hours.');
+    this.reset();
+});
 
-        // Add floating animation to service cards
-        document.querySelectorAll('.service-card').forEach((card, index) => {
-            card.style.animationDelay = `${index * 0.2}s`;
-        });
+// Add floating animation to service cards
+document.querySelectorAll('.service-card').forEach((card, index) => {
+    card.style.animationDelay = `${index * 0.2}s`;
+});
 
-		// Walking dog and walker animation
-		const walkingDog = document.querySelector('.walking-dog');
-		const dogWalker = document.querySelector('.dog-walker');
-		let position = 0;
-		let direction = 1;
-		const speed = .25;
-		const dogWalkerDistance = 10; // Distance between dog and walker
-		let iconDir = direction * -1;
-		let walkingTime = 0; // Time counter for walking animation
-		let dogScale = .5;
-		let dogOffset = 35 * dogScale;
-		walkingDog.style.transform = `scaleX(${iconDir})`;
-		dogWalker.style.transform = `scaleX(${iconDir})`;
+// Walking dog and walker animation
+const walkingDog = document.querySelector('.walking-dog');
+const dogWalker = document.querySelector('.dog-walker');
+let position = 0;
+let direction = 1;
+const speed = 0.25;
+const dogWalkerDistance = 10; // Distance between dog and walker
+let iconDir = direction * -1;
+let walkingTime = 0; // Time counter for walking animation
+let dogScale = 0.5;
+let dogOffset = 35 * dogScale;
+let hasPoopedThisDirection = false; // Track if poop has been dropped in current direction
+walkingDog.style.transform = `scaleX(${iconDir}) scaleY(${dogScale})`;
+dogWalker.style.transform = `scaleX(${iconDir})`;
 
-		function animateWalkingDog() {
-			const maxWidth = window.innerWidth - 100; // Account for both dog and walker width
-			
-			position += speed * direction;
-			walkingTime += 0.1; // Increment time for walking animation
-			
-			// Calculate subtle rotation and vertical bob for walking effect
-			const dogRotation = Math.sin(walkingTime) * 3; // 3 degrees max rotation
-			const walkerRotation = Math.sin(walkingTime + 0.5) * 2; // Slightly offset and less rotation
-			const dogBob = Math.sin(walkingTime * 2) * 1; // Vertical bob, 2px max
-			const walkerBob = Math.sin(walkingTime * 2 + 0.3) * .5; // Slightly offset and less bob
-			
-			// Reverse direction when hitting edges
-			if (position >= maxWidth || position <= 0) {
-				direction *= -1;
-				iconDir = direction * -1;
-				let dScale = iconDir * dogScale;
-				let dPos = dogBob + dogOffset;
-				// Flip both the dog and walker horizontally when changing direction, preserve walking animation
-				walkingDog.style.transform = `scaleX(${dScale}) scaleY(${dogScale}) rotate(${dogRotation}deg) translateY(${dPos}px)`;
-				
-				dogWalker.style.transform = `scaleX(${iconDir}) rotate(${walkerRotation}deg) translateY(${walkerBob}px)`;
-			} else {
-				let dScale = iconDir * dogScale;
-				let dPos = dogBob + dogOffset;
-				// Apply rotation and vertical bob animation during normal movement
-				walkingDog.style.transform = `scaleX(${dScale}) scaleY(${dogScale}) rotate(${dogRotation}deg) translateY(${dPos}px)`;
-				dogWalker.style.transform = `scaleX(${iconDir}) rotate(${walkerRotation}deg) translateY(${walkerBob}px)`;
-			}
-			
-			// Position the dog
-			walkingDog.style.left = position + 'px';
-			
-			// Position the walker behind the dog (maintaining distance)
-			if (direction === 1) {
-				// Moving right, walker is behind (to the left)
-				dogWalker.style.left = (position - dogWalkerDistance) + 'px';
-			} else {
-				// Moving left, walker is behind (to the right)
-				dogWalker.style.left = (position + dogWalkerDistance) + 'px';
-			}
-			
-			requestAnimationFrame(animateWalkingDog);
-		}
+// Array to store poop positions, elements, and creation direction
+const poops = [];
 
-		// Start the walking animation
-		animateWalkingDog();
-        
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            const maxWidth = window.innerWidth - 100;
-            if (position > maxWidth) {
-                position = maxWidth;
-            }
-        });
-    </script>
-</body>
+function createPoop(positionX) {
+    const poop = document.createElement('div');
+    poop.className = 'poop-emoji';
+    poop.innerHTML = '💩';
+    poop.style.position = 'fixed';
+    poop.style.bottom = '20px';
+    poop.style.left = `${positionX}px`;
+    poop.style.fontSize = '1rem';
+    poop.style.zIndex = '998';
+    document.body.appendChild(poop);
+    console.log(`Poop created at position: ${positionX}, direction: ${direction}`);
+    return poop;
+}
+
+function animateWalkingDog() {
+    const maxWidth = window.innerWidth - 100; // Account for both dog and walker width
+    const poopThreshold = 50; // Distance from edge to drop poop
+
+    position += speed * direction;
+    walkingTime += 0.1; // Increment time for walking animation
+
+    // Calculate subtle rotation and vertical bob for walking effect
+    const dogRotation = Math.sin(walkingTime) * 3;
+    const walkerRotation = Math.sin(walkingTime + 0.5) * 2;
+    const dogBob = Math.sin(walkingTime * 2) * 1;
+    const walkerBob = Math.sin(walkingTime * 2 + 0.3) * 0.5;
+
+    // Check if dog is near the edge to drop poop, only if not already pooped in this direction
+    if (!hasPoopedThisDirection &&
+        ((direction === 1 && position >= maxWidth - poopThreshold) ||
+         (direction === -1 && position <= poopThreshold))) {
+        const poop = createPoop(position);
+        poops.push({ position, element: poop, createdDirection: direction });
+        hasPoopedThisDirection = true;
+        console.log(`Poop dropped, hasPoopedThisDirection set to true`);
+    }
+
+    // Reverse direction when hitting edges
+    if (position >= maxWidth || position <= 0) {
+        direction *= -1;
+        iconDir = direction * -1;
+        hasPoopedThisDirection = false; // Reset poop flag on direction change
+        let dScale = iconDir * dogScale;
+        let dPos = dogBob + dogOffset;
+        walkingDog.style.transform = `scaleX(${dScale}) scaleY(${dogScale}) rotate(${dogRotation}deg) translateY(${dPos}px)`;
+        dogWalker.style.transform = `scaleX(${iconDir}) rotate(${walkerRotation}deg) translateY(${walkerBob}px)`;
+        console.log(`Direction reversed at position: ${position}, new direction: ${direction}, hasPoopedThisDirection reset`);
+    } else {
+        let dScale = iconDir * dogScale;
+        let dPos = dogBob + dogOffset;
+        walkingDog.style.transform = `scaleX(${dScale}) scaleY(${dogScale}) rotate(${dogRotation}deg) translateY(${dPos}px)`;
+        dogWalker.style.transform = `scaleX(${iconDir}) rotate(${walkerRotation}deg) translateY(${walkerBob}px)`;
+    }
+
+    // Position the dog
+    walkingDog.style.left = position + 'px';
+
+    // Position the walker behind the dog
+    const walkerPosition = direction === 1 ? position - dogWalkerDistance : position + dogWalkerDistance;
+    dogWalker.style.left = `${walkerPosition}px`;
+
+    // Check if walker passes over any poop to remove it, only if moving in opposite direction
+    for (let i = poops.length - 1; i >= 0; i--) {
+        const poop = poops[i];
+        if (direction !== poop.createdDirection && Math.abs(walkerPosition - poop.position) < 5) {
+            console.log(`Poop removed at position: ${poop.position}, walker at: ${walkerPosition}, current direction: ${direction}, created direction: ${poop.createdDirection}`);
+            poop.element.style.transition = 'opacity 0.3s ease';
+            poop.element.style.opacity = '0';
+            setTimeout(() => {
+                poop.element.remove();
+                poops.splice(i, 1);
+            }, 300);
+            break; // Prevent multiple removals in the same frame
+        }
+    }
+
+    requestAnimationFrame(animateWalkingDog);
+}
+
+// Start the walking animation
+animateWalkingDog();
+
+// Handle window resize
+window.addEventListener('resize', () => {
+    const maxWidth = window.innerWidth - 100;
+    if (position > maxWidth) {
+        position = maxWidth;
+    }
+    // Adjust poop positions to stay within bounds
+    poops.forEach(poop => {
+        if (poop.position > maxWidth) {
+            poop.element.style.left = `${maxWidth}px`;
+            poop.position = maxWidth;
+            console.log(`Poop position adjusted to: ${maxWidth} on resize`);
+        }
+    });
+});
+</script>
+  </body>
 </html>
