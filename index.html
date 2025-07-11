@@ -562,6 +562,18 @@ let hasPoopedThisDirection = false; // Track if poop has been dropped in current
 walkingDog.style.transform = `scaleX(${iconDir}) scaleY(${dogScale})`;
 dogWalker.style.transform = `scaleX(${iconDir})`;
 
+// Ball throwing variables
+let ballThrown = false;
+let ballElement = null;
+let ballPosition = { x: 0, y: 0 };
+let ballTargetX = 0;
+let ballThrowProgress = 0;
+let dogChasingBall = false;
+let dogReturningBall = false;
+let dogOriginalPosition = 0;
+let dogOriginalDirection = 1;
+let dogSpeed = 1.5; // Faster speed when chasing ball
+
 // Array to store poop positions, elements, and creation direction
 const poops = [];
 
@@ -578,7 +590,151 @@ function createPoop(positionX) {
     return poop;
 }
 
+function createBall(startX, startY) {
+    const ball = document.createElement('div');
+    ball.className = 'ball';
+    ball.innerHTML = '🥎';
+    ball.style.position = 'fixed';
+    ball.style.left = `${startX}px`;
+    ball.style.bottom = `${startY}px`;
+    ball.style.fontSize = '.8rem';
+    ball.style.zIndex = '999';
+    ball.style.transition = 'none';
+    document.body.appendChild(ball);
+    return ball;
+}
+
+function throwBall(targetX) {
+    if (ballThrown) return;
+    
+    ballThrown = true;
+    dogChasingBall = true;
+    dogOriginalPosition = position;
+    dogOriginalDirection = direction;
+    
+    // Calculate walker position
+    const walkerPosition = direction === 1 ? position - dogWalkerDistance : position + dogWalkerDistance;
+    
+    // Create ball at walker position
+    ballElement = createBall(walkerPosition, 60);
+    ballPosition.x = walkerPosition;
+    ballPosition.y = 60;
+    ballTargetX = targetX;
+    ballThrowProgress = 0;
+    
+    animateBallThrow();
+}
+
+function animateBallThrow() {
+    if (!ballElement) return;
+    
+    ballThrowProgress += 0.02;
+    
+    if (ballThrowProgress >= 1) {
+        // Ball has landed
+        ballPosition.x = ballTargetX;
+        ballPosition.y = 20;
+        ballElement.style.left = `${ballPosition.x}px`;
+        ballElement.style.bottom = `${ballPosition.y}px`;
+        return;
+    }
+    
+    // Calculate arc trajectory
+    const startX = dogOriginalDirection === 1 ? dogOriginalPosition - dogWalkerDistance : dogOriginalPosition + dogWalkerDistance;
+    const currentX = startX + (ballTargetX - startX) * ballThrowProgress;
+    const arc = Math.sin(ballThrowProgress * Math.PI) * 100; // Arc height
+    const currentY = 60 + arc;
+    
+    ballPosition.x = currentX;
+    ballPosition.y = currentY;
+    
+    ballElement.style.left = `${currentX}px`;
+    ballElement.style.bottom = `${currentY}px`;
+    
+    requestAnimationFrame(animateBallThrow);
+}
+
+function dogChaseBall() {
+    if (!dogChasingBall || !ballElement) return;
+    
+    // Only check if ball has landed (throw progress complete)
+    if (ballThrowProgress < 1) return;
+    
+    const distanceToBall = Math.abs(position - ballTargetX);
+    
+    if (distanceToBall < 15) {
+        // Dog reached the ball
+        dogChasingBall = false;
+        dogReturningBall = true;
+        ballElement.remove();
+        ballElement = null;
+        return;
+    }
+    
+    // Move dog towards ball target position
+    const dogDirection = position < ballTargetX ? 1 : -1;
+    position += dogSpeed * dogDirection;
+    
+    // Update dog visual direction
+    iconDir = dogDirection * -1;
+    let dScale = iconDir * dogScale;
+    let dPos = dogOffset;
+    walkingDog.style.transform = `scaleX(${dScale}) scaleY(${dogScale}) translateY(${dPos}px)`;
+    walkingDog.style.left = position + 'px';
+}
+
+function dogReturnToWalker() {
+    if (!dogReturningBall) return;
+    
+    // Calculate walker position
+    const walkerPosition = dogOriginalDirection === 1 ? dogOriginalPosition - dogWalkerDistance : dogOriginalPosition + dogWalkerDistance;
+    const distanceToWalker = Math.abs(position - walkerPosition);
+    
+    if (distanceToWalker < 10) {
+        // Dog returned to walker
+        dogReturningBall = false;
+        ballThrown = false;
+        position = dogOriginalPosition;
+        direction = dogOriginalDirection;
+        iconDir = direction * -1;
+        
+        // Reset dog visual state
+        let dScale = iconDir * dogScale;
+        walkingDog.style.transform = `scaleX(${dScale}) scaleY(${dogScale})`;
+        walkingDog.style.left = position + 'px';
+        
+        // Reset walker position
+        const finalWalkerPosition = direction === 1 ? position - dogWalkerDistance : position + dogWalkerDistance;
+        dogWalker.style.left = `${finalWalkerPosition}px`;
+        return;
+    }
+    
+    // Move dog towards walker
+    const dogDirection = position < walkerPosition ? 1 : -1;
+    position += dogSpeed * dogDirection;
+    
+    // Update dog visual direction
+    iconDir = dogDirection * -1;
+    let dScale = iconDir * dogScale;
+    let dPos = dogOffset;
+    walkingDog.style.transform = `scaleX(${dScale}) scaleY(${dogScale}) translateY(${dPos}px)`;
+    walkingDog.style.left = position + 'px';
+}
+
 function animateWalkingDog() {
+    if (dogChasingBall) {
+        dogChaseBall();
+        requestAnimationFrame(animateWalkingDog);
+        return;
+    }
+    
+    if (dogReturningBall) {
+        dogReturnToWalker();
+        requestAnimationFrame(animateWalkingDog);
+        return;
+    }
+    
+    // Normal walking behavior
     const maxWidth = window.innerWidth - 100; // Account for both dog and walker width
     const poopThreshold = 50; // Distance from edge to drop poop
 
@@ -592,7 +748,8 @@ function animateWalkingDog() {
     const walkerBob = Math.sin(walkingTime * 2 + 0.3) * 0.5;
 
     // Check if dog is near the edge to drop poop, only if not already pooped in this direction
-    if (!hasPoopedThisDirection &&
+    // Don't poop if chasing or returning ball
+    if (!hasPoopedThisDirection && !dogChasingBall && !dogReturningBall &&
         ((direction === 1 && position >= maxWidth - poopThreshold) ||
          (direction === -1 && position <= poopThreshold))) {
         const poop = createPoop(position);
@@ -639,6 +796,19 @@ function animateWalkingDog() {
 
     requestAnimationFrame(animateWalkingDog);
 }
+
+// Click event for throwing ball
+document.addEventListener('click', function(e) {
+    if (ballThrown) return; // Don't throw if ball is already thrown
+    
+    // Prevent throwing on form elements or other interactive elements
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.tagName === 'A') {
+        return;
+    }
+    
+    const clickX = e.clientX;
+    throwBall(clickX);
+});
 
 // Start the walking animation
 animateWalkingDog();
